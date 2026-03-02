@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Sarcopenia Risk Monitoring | Metropolitan College | ciderr_thess@mitropolitiko.edu.gr</title>
+
 <style>
 :root{
   --primary:#0b3c5d;
@@ -134,82 +135,84 @@ canvas{
 
 <header>
   <h1>Sarcopenia Risk Monitoring Dashboard</h1>
-  <p>Center of Interdisciplinary Education and Research – Metropolitan College Thessaloniki | 2026</p>
+  <p>
+    Center of Interdisciplinary Education and Research – Metropolitan College Thessaloniki | 2026<br>
+    Contact: ciderr_thess@mitropolitiko.edu.gr
+  </p>
 </header>
 
 <div class="container">
 
-<div class="grid">
+  <div class="grid">
+    <div class="card">
+      <h2>Group Overview</h2>
+      <div id="summary"></div>
+    </div>
 
-<div class="card">
-<h2>Group Overview</h2>
-<div id="summary"></div>
-</div>
+    <div class="card">
+      <h2>Filter Patients</h2>
+      <div class="controls">
+        <label>Group:
+          <select id="groupFilter">
+            <option value="ALL">All Groups</option>
+          </select>
+        </label>
 
-<div class="card">
-<h2>Filter Patients</h2>
-<div class="controls">
-<label>Group:
-<select id="groupFilter">
-<option value="ALL">All Groups</option>
-</select>
-</label>
+        <label>Risk Level:
+          <select id="alertFilter">
+            <option value="ALL">All</option>
+            <option value="OK">Low Risk</option>
+            <option value="YELLOW">Moderate Risk</option>
+            <option value="RED">High Risk</option>
+            <option value="NA">Missing Data</option>
+          </select>
+        </label>
 
-<label>Risk Level:
-<select id="alertFilter">
-<option value="ALL">All</option>
-<option value="OK">Low Risk</option>
-<option value="YELLOW">Moderate Risk</option>
-<option value="RED">High Risk</option>
-<option value="NA">Missing Data</option>
-</select>
-</label>
+        <label>Search Patient:
+          <input id="search" placeholder="Type ID..." />
+        </label>
+      </div>
 
-<label>Search Patient:
-<input id="search" placeholder="Type ID..." />
-</label>
-</div>
-<p style="margin-top:10px;font-size:13px;color:#666;">
-Risk is calculated from percentage change in Skeletal Muscle Index (E1 → E2).
-</p>
-</div>
+      <p style="margin-top:10px;font-size:13px;color:#666;">
+        Risk is calculated from percentage change in Skeletal Muscle Index (E1 → E2).
+      </p>
+    </div>
+  </div>
 
-</div>
+  <div class="card">
+    <h2>Muscle Mass Change Over Time</h2>
+    <p style="font-size:13px;color:#666;">
+      Each line represents one patient (E1, E2, E3 measurements).
+    </p>
+    <canvas id="plot" width="900" height="380"></canvas>
+  </div>
 
-<div class="card">
-<h2>Muscle Mass Change Over Time</h2>
-<p style="font-size:13px;color:#666;">
-Each line represents one patient (E1, E2, E3 measurements).
-</p>
-<canvas id="plot" width="900" height="380"></canvas>
-</div>
-
-<div class="card">
-<h2>Individual Patient Data</h2>
-<div style="overflow:auto; max-height:450px;">
-<table>
-<thead>
-<tr>
-<th>ID</th>
-<th>Group</th>
-<th>SMI E1</th>
-<th>SMI E2</th>
-<th>SMI E3</th>
-<th>% Change E1→E2</th>
-<th>% Change E1→E3</th>
-<th>Risk Level</th>
-<th>High Loss at E3</th>
-</tr>
-</thead>
-<tbody id="rows"></tbody>
-</table>
-</div>
-</div>
+  <div class="card">
+    <h2>Individual Patient Data</h2>
+    <div style="overflow:auto; max-height:450px;">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Group</th>
+            <th>SMI E1</th>
+            <th>SMI E2</th>
+            <th>SMI E3</th>
+            <th>% Change E1→E2</th>
+            <th>% Change E1→E3</th>
+            <th>Risk Level</th>
+            <th>High Loss at E3</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </div>
 
 </div>
 
 <div class="footer">
-Digital Monitoring Prototype – Academic Use Only
+  Digital Monitoring Prototype – Academic Use Only
 </div>
 
 <script>
@@ -224,43 +227,43 @@ function badge(txt){
 }
 
 function renderSummary(summary){
-  let html=`<table><thead><tr>
-  <th>Group</th><th>Patients</th>
-  <th>Mean % Change (E1→E2)</th>
-  <th>Mean % Change (E1→E3)</th>
-  <th>Moderate/High Risk</th>
-  <th>High Risk</th>
+  let html = `<table><thead><tr>
+    <th>Group</th><th>Patients</th>
+    <th>Mean % Change (E1→E2)</th>
+    <th>Mean % Change (E1→E3)</th>
+    <th>Moderate/High Risk</th>
+    <th>High Risk</th>
   </tr></thead><tbody>`;
 
-  summary.forEach(s=>{
-    html+=`<tr>
-    <td>${s.Group}</td>
-    <td>${s.n}</td>
-    <td>${Number(s.mean_pct_dSMI_12).toFixed(2)}%</td>
-    <td>${Number(s.mean_pct_dSMI_13).toFixed(2)}%</td>
-    <td>${s.yellow_or_worse} (${(100*s.yellow_or_worse_rate).toFixed(0)}%)</td>
-    <td>${s.red} (${(100*s.red_rate).toFixed(0)}%)</td>
+  (summary || []).forEach(s=>{
+    html += `<tr>
+      <td>${s.Group}</td>
+      <td>${s.n}</td>
+      <td>${Number(s.mean_pct_dSMI_12).toFixed(2)}%</td>
+      <td>${Number(s.mean_pct_dSMI_13).toFixed(2)}%</td>
+      <td>${s.yellow_or_worse} (${(100*s.yellow_or_worse_rate).toFixed(0)}%)</td>
+      <td>${s.red} (${(100*s.red_rate).toFixed(0)}%)</td>
     </tr>`;
   });
 
-  html+=`</tbody></table>`;
+  html += `</tbody></table>`;
   return html;
 }
 
 function renderRows(rows){
-  const tbody=document.getElementById("rows");
-  tbody.innerHTML=rows.map(r=>`
-  <tr>
-  <td>${r.ID}</td>
-  <td>${r.Group}</td>
-  <td>${Number(r.SMIE1).toFixed(3)}</td>
-  <td>${Number(r.SMIE2).toFixed(3)}</td>
-  <td>${Number(r.SMIE3).toFixed(3)}</td>
-  <td>${Number(r.pct_dSMI_12).toFixed(2)}%</td>
-  <td>${Number(r.pct_dSMI_13).toFixed(2)}%</td>
-  <td>${badge(r.alert_E2)}</td>
-  <td>${r.high_loss_E3 ? "Yes" : "No"}</td>
-  </tr>
+  const tbody = document.getElementById("rows");
+  tbody.innerHTML = (rows || []).map(r => `
+    <tr>
+      <td>${r.ID}</td>
+      <td>${r.Group}</td>
+      <td>${Number(r.SMIE1).toFixed(3)}</td>
+      <td>${Number(r.SMIE2).toFixed(3)}</td>
+      <td>${Number(r.SMIE3).toFixed(3)}</td>
+      <td>${Number(r.pct_dSMI_12).toFixed(2)}%</td>
+      <td>${Number(r.pct_dSMI_13).toFixed(2)}%</td>
+      <td>${badge(r.alert_E2)}</td>
+      <td>${r.high_loss_E3 ? "Yes" : "No"}</td>
+    </tr>
   `).join('');
 }
 
@@ -269,9 +272,9 @@ function drawPlot(canvas, rows){
   const W = canvas.width;
   const H = canvas.height;
 
-  ctx.clearRect(0,0,W,H);
+  ctx.clearRect(0, 0, W, H);
 
-  const vals = rows
+  const vals = (rows || [])
     .flatMap(r => [r.SMIE1, r.SMIE2, r.SMIE3])
     .map(Number)
     .filter(v => !isNaN(v));
@@ -283,10 +286,10 @@ function drawPlot(canvas, rows){
 
   const pad = 70;
 
-  const x = i => pad + i * ((W - 2*pad)/2);
-  const y = v => pad + (max - v) * ((H - 2*pad)/(max - min || 1));
+  const x = i => pad + i * ((W - 2*pad) / 2);
+  const y = v => pad + (max - v) * ((H - 2*pad) / (max - min || 1));
 
-  // ---- AXES ----
+  // Axes
   ctx.strokeStyle = "#999";
   ctx.lineWidth = 1.5;
   ctx.beginPath();
@@ -295,53 +298,92 @@ function drawPlot(canvas, rows){
   ctx.lineTo(W - pad, H - pad);
   ctx.stroke();
 
+  // Labels
   ctx.fillStyle = "#333";
   ctx.font = "14px Arial";
 
-  // Y axis label
+  // Y label
   ctx.save();
-  ctx.translate(20, H/2);
+  ctx.translate(22, H/2);
   ctx.rotate(-Math.PI/2);
   ctx.textAlign = "center";
   ctx.fillText("Skeletal Muscle Index (kg/m²)", 0, 0);
   ctx.restore();
 
-  // X axis label
+  // X label
   ctx.textAlign = "center";
-  ctx.fillText("Time Point", W/2, H - 20);
+  ctx.fillText("Time Point", W/2, H - 18);
 
-  // Time labels
-  ctx.fillText("Baseline (E1)", x(0), H - pad + 30);
-  ctx.fillText("Post-Op 1 (E2)", x(1), H - pad + 30);
-  ctx.fillText("Post-Op 2 (E3)", x(2), H - pad + 30);
+  // X tick labels
+  ctx.fillText("Baseline (E1)", x(0), H - pad + 28);
+  ctx.fillText("Follow-up (E2)", x(1), H - pad + 28);
+  ctx.fillText("Follow-up (E3)", x(2), H - pad + 28);
 
-  // Y ticks
+  // Y tick labels
   ctx.textAlign = "right";
-  ctx.fillText(max.toFixed(2), pad - 10, y(max)+4);
-  ctx.fillText(min.toFixed(2), pad - 10, y(min)+4);
+  ctx.fillText(max.toFixed(2), pad - 10, y(max) + 4);
+  ctx.fillText(min.toFixed(2), pad - 10, y(min) + 4);
 
-  // ---- LINES ----
-  ctx.globalAlpha = 0.5;
+  // Lines
+  ctx.globalAlpha = 0.55;
   ctx.lineWidth = 1.2;
+  ctx.strokeStyle = "#0b3c5d";
 
-  rows.forEach(r=>{
-    const v1 = Number(r.SMIE1);
-    const v2 = Number(r.SMIE2);
-    const v3 = Number(r.SMIE3);
-
+  (rows || []).forEach(r => {
+    const v1 = Number(r.SMIE1), v2 = Number(r.SMIE2), v3 = Number(r.SMIE3);
     if(isNaN(v1) || isNaN(v2) || isNaN(v3)) return;
 
     ctx.beginPath();
     ctx.moveTo(x(0), y(v1));
     ctx.lineTo(x(1), y(v2));
     ctx.lineTo(x(2), y(v3));
-    ctx.strokeStyle = "#0b3c5d";
     ctx.stroke();
   });
 
   ctx.globalAlpha = 1;
 }
-</script>
+
+(async function(){
+  try{
+    const data = await loadData();
+
+    document.getElementById("summary").innerHTML = renderSummary(data.summary_by_group);
+
+    // fill group options (keep "All Groups" first)
+    const groups = [...new Set((data.rows || []).map(r => r.Group))].sort();
+    const sel = document.getElementById("groupFilter");
+    groups.forEach(g=>{
+      const opt = document.createElement("option");
+      opt.value = g;
+      opt.textContent = g;
+      sel.appendChild(opt);
+    });
+
+    function update(){
+      const group = document.getElementById("groupFilter").value;
+      const alert = document.getElementById("alertFilter").value;
+      const search = document.getElementById("search").value;
+
+      const rows = (data.rows || []).filter(r=>{
+        if(group !== "ALL" && r.Group !== group) return false;
+        if(alert !== "ALL" && r.alert_E2 !== alert) return false;
+        if(search && !String(r.ID).includes(search)) return false;
+        return true;
+      });
+
+      renderRows(rows);
+      drawPlot(document.getElementById("plot"), rows.length ? rows : (data.rows || []));
+    }
+
+    document.getElementById("groupFilter").addEventListener("change", update);
+    document.getElementById("alertFilter").addEventListener("change", update);
+    document.getElementById("search").addEventListener("input", update);
+
+    update();
+  } catch(e){
+    alert("Dashboard error: " + e.message);
+  }
+})();
 </script>
 
 </body>
