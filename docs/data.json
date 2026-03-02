@@ -1,0 +1,380 @@
+{
+  "meta": {
+    "yellow_threshold_pct": -5.0,
+    "red_threshold_pct": -10.0,
+    "note": "Alert rules based on % change in SMI from E1 to E2. Negative values mean muscle loss."
+  },
+  "summary_by_group": [
+    {
+      "Group": "GC",
+      "n": 14,
+      "mean_pct_dSMI_12": -21.34263422931947,
+      "mean_pct_dSMI_13": -71.34923861501777,
+      "median_pct_dSMI_12": -14.557407842216492,
+      "median_pct_dSMI_13": -100.0,
+      "yellow_or_worse": 11,
+      "red": 9,
+      "high_loss_E3": 11,
+      "yellow_or_worse_rate": 0.7857142857142857,
+      "red_rate": 0.6428571428571429,
+      "high_loss_E3_rate": 0.7857142857142857
+    },
+    {
+      "Group": "GI",
+      "n": 17,
+      "mean_pct_dSMI_12": -11.779675806301475,
+      "mean_pct_dSMI_13": -71.76949186375923,
+      "median_pct_dSMI_12": -13.388931622862941,
+      "median_pct_dSMI_13": -100.0,
+      "yellow_or_worse": 9,
+      "red": 9,
+      "high_loss_E3": 11,
+      "yellow_or_worse_rate": 0.5294117647058824,
+      "red_rate": 0.5294117647058824,
+      "high_loss_E3_rate": 0.6470588235294118
+    }
+  ],
+  "rows": [
+    {
+      "ID": "Expobar 1",
+      "Group": "GI",
+      "SMIE1": 17.702,
+      "SMIE2": 14.009,
+      "SMIE3": 14.468,
+      "pct_dSMI_12": -20.863,
+      "pct_dSMI_13": -18.27,
+      "alert_E2": "RED",
+      "high_loss_E3": 1
+    },
+    {
+      "ID": "Expobar 2",
+      "Group": "GC",
+      "SMIE1": 20.111,
+      "SMIE2": 18.173,
+      "SMIE3": 17.738,
+      "pct_dSMI_12": -9.635,
+      "pct_dSMI_13": -11.801,
+      "alert_E2": "YELLOW",
+      "high_loss_E3": 1
+    },
+    {
+      "ID": "Expobar 3",
+      "Group": "GC",
+      "SMIE1": 20.512,
+      "SMIE2": 16.625,
+      "SMIE3": 17.433,
+      "pct_dSMI_12": -18.948,
+      "pct_dSMI_13": -15.012,
+      "alert_E2": "RED",
+      "high_loss_E3": 1
+    },
+    {
+      "ID": "Expobar 4",
+      "Group": "GC",
+      "SMIE1": 21.528,
+      "SMIE2": 18.623,
+      "SMIE3": 17.645,
+      "pct_dSMI_12": -13.495,
+      "pct_dSMI_13": -18.038,
+      "alert_E2": "RED",
+      "high_loss_E3": 1
+    },
+    {
+      "ID": "Expobar 5",
+      "Group": "GC",
+      "SMIE1": 19.978,
+      "SMIE2": 17.878,
+      "SMIE3": 11.989,
+      "pct_dSMI_12": -10.512,
+      "pct_dSMI_13": -39.991,
+      "alert_E2": "RED",
+      "high_loss_E3": 1
+    },
+    {
+      "ID": "Expobar 6",
+      "Group": "GI",
+      "SMIE1": 22.979,
+      "SMIE2": 19.436,
+      "SMIE3": 20.045,
+      "pct_dSMI_12": -15.419,
+      "pct_dSMI_13": -12.766,
+      "alert_E2": "RED",
+      "high_loss_E3": 1
+    },
+    {
+      "ID": "Expobar 7",
+      "Group": "GI",
+      "SMIE1": 23.459,
+      "SMIE2": 21.102,
+      "SMIE3": 21.116,
+      "pct_dSMI_12": -10.045,
+      "pct_dSMI_13": -9.985,
+      "alert_E2": "RED",
+      "high_loss_E3": 0
+    },
+    {
+      "ID": "Expobar 8",
+      "Group": "GI",
+      "SMIE1": 22.098,
+      "SMIE2": 18.731,
+      "SMIE3": 17.632,
+      "pct_dSMI_12": -15.238,
+      "pct_dSMI_13": -20.213,
+      "alert_E2": "RED",
+      "high_loss_E3": 1
+    },
+    {
+      "ID": "Expobar 9",
+      "Group": "GI",
+      "SMIE1": 18.13,
+      "SMIE2": 16.294,
+      "SMIE3": 0.0,
+      "pct_dSMI_12": -10.13,
+      "pct_dSMI_13": -100.0,
+      "alert_E2": "RED",
+      "high_loss_E3": 1
+    },
+    {
+      "ID": "Expobar 10",
+      "Group": "GC",
+      "SMIE1": 19.376,
+      "SMIE2": 17.694,
+      "SMIE3": 0.0,
+      "pct_dSMI_12": -8.679,
+      "pct_dSMI_13": -100.0,
+      "alert_E2": "YELLOW",
+      "high_loss_E3": 1
+    },
+    {
+      "ID": "Expobar 11",
+      "Group": "GI",
+      "SMIE1": 17.116,
+      "SMIE2": 17.22,
+      "SMIE3": 0.0,
+      "pct_dSMI_12": 0.608,
+      "pct_dSMI_13": -100.0,
+      "alert_E2": "OK",
+      "high_loss_E3": 1
+    },
+    {
+      "ID": "Expobar 12",
+      "Group": "GI",
+      "SMIE1": 24.685,
+      "SMIE2": 21.836,
+      "SMIE3": 0.0,
+      "pct_dSMI_12": -11.54,
+      "pct_dSMI_13": -100.0,
+      "alert_E2": "RED",
+      "high_loss_E3": 1
+    },
+    {
+      "ID": "Expobar 13",
+      "Group": "GC",
+      "SMIE1": 22.896,
+      "SMIE2": 19.248,
+      "SMIE3": 0.0,
+      "pct_dSMI_12": -15.936,
+      "pct_dSMI_13": -100.0,
+      "alert_E2": "RED",
+      "high_loss_E3": 1
+    },
+    {
+      "ID": "Expobar 14",
+      "Group": "GC",
+      "SMIE1": 0.0,
+      "SMIE2": 0.0,
+      "SMIE3": 0.0,
+      "pct_dSMI_12": NaN,
+      "pct_dSMI_13": NaN,
+      "alert_E2": "NA",
+      "high_loss_E3": 0
+    },
+    {
+      "ID": "Expobar 15",
+      "Group": "GI",
+      "SMIE1": 0.0,
+      "SMIE2": 0.0,
+      "SMIE3": 0.0,
+      "pct_dSMI_12": NaN,
+      "pct_dSMI_13": NaN,
+      "alert_E2": "NA",
+      "high_loss_E3": 0
+    },
+    {
+      "ID": "Expobar 16",
+      "Group": "GI",
+      "SMIE1": 0.0,
+      "SMIE2": 0.0,
+      "SMIE3": 0.0,
+      "pct_dSMI_12": NaN,
+      "pct_dSMI_13": NaN,
+      "alert_E2": "NA",
+      "high_loss_E3": 0
+    },
+    {
+      "ID": "Expobar 17",
+      "Group": "GC",
+      "SMIE1": 24.813,
+      "SMIE2": 22.152,
+      "SMIE3": 0.0,
+      "pct_dSMI_12": -10.725,
+      "pct_dSMI_13": -100.0,
+      "alert_E2": "RED",
+      "high_loss_E3": 1
+    },
+    {
+      "ID": "Expobar 18",
+      "Group": "GI",
+      "SMIE1": 17.309,
+      "SMIE2": 18.301,
+      "SMIE3": 0.0,
+      "pct_dSMI_12": 5.732,
+      "pct_dSMI_13": -100.0,
+      "alert_E2": "OK",
+      "high_loss_E3": 1
+    },
+    {
+      "ID": "Expobar 19",
+      "Group": "GC",
+      "SMIE1": 21.464,
+      "SMIE2": 17.852,
+      "SMIE3": 0.0,
+      "pct_dSMI_12": -16.829,
+      "pct_dSMI_13": -100.0,
+      "alert_E2": "RED",
+      "high_loss_E3": 1
+    },
+    {
+      "ID": "Expobar 20",
+      "Group": "GI",
+      "SMIE1": 0.0,
+      "SMIE2": 0.0,
+      "SMIE3": 0.0,
+      "pct_dSMI_12": NaN,
+      "pct_dSMI_13": NaN,
+      "alert_E2": "NA",
+      "high_loss_E3": 0
+    },
+    {
+      "ID": "Expobar 21",
+      "Group": "GI",
+      "SMIE1": 20.295,
+      "SMIE2": 19.413,
+      "SMIE3": 0.0,
+      "pct_dSMI_12": -4.347,
+      "pct_dSMI_13": -100.0,
+      "alert_E2": "OK",
+      "high_loss_E3": 1
+    },
+    {
+      "ID": "Expobar 22",
+      "Group": "GC",
+      "SMIE1": 24.166,
+      "SMIE2": 20.431,
+      "SMIE3": 0.0,
+      "pct_dSMI_12": -15.453,
+      "pct_dSMI_13": -100.0,
+      "alert_E2": "RED",
+      "high_loss_E3": 1
+    },
+    {
+      "ID": "Expobar 23",
+      "Group": "GC",
+      "SMIE1": 0.0,
+      "SMIE2": 0.0,
+      "SMIE3": 0.0,
+      "pct_dSMI_12": NaN,
+      "pct_dSMI_13": NaN,
+      "alert_E2": "NA",
+      "high_loss_E3": 0
+    },
+    {
+      "ID": "Expobar 24",
+      "Group": "GI",
+      "SMIE1": 17.633,
+      "SMIE2": 14.926,
+      "SMIE3": 0.0,
+      "pct_dSMI_12": -15.352,
+      "pct_dSMI_13": -100.0,
+      "alert_E2": "RED",
+      "high_loss_E3": 1
+    },
+    {
+      "ID": "Expobar 25",
+      "Group": "GI",
+      "SMIE1": 20.302,
+      "SMIE2": 15.206,
+      "SMIE3": 0.0,
+      "pct_dSMI_12": -25.102,
+      "pct_dSMI_13": -100.0,
+      "alert_E2": "RED",
+      "high_loss_E3": 1
+    },
+    {
+      "ID": "Expobar 26",
+      "Group": "GC",
+      "SMIE1": 20.827,
+      "SMIE2": 17.795,
+      "SMIE3": 0.0,
+      "pct_dSMI_12": -14.557,
+      "pct_dSMI_13": -100.0,
+      "alert_E2": "RED",
+      "high_loss_E3": 1
+    },
+    {
+      "ID": "Expobar 27",
+      "Group": "GI",
+      "SMIE1": 0.0,
+      "SMIE2": 0.0,
+      "SMIE3": 0.0,
+      "pct_dSMI_12": NaN,
+      "pct_dSMI_13": NaN,
+      "alert_E2": "NA",
+      "high_loss_E3": 0
+    },
+    {
+      "ID": "Expobar 28",
+      "Group": "GI",
+      "SMIE1": 19.885,
+      "SMIE2": 15.975,
+      "SMIE3": 0.0,
+      "pct_dSMI_12": -19.662,
+      "pct_dSMI_13": -100.0,
+      "alert_E2": "RED",
+      "high_loss_E3": 1
+    },
+    {
+      "ID": "Expobar 29",
+      "Group": "GC",
+      "SMIE1": 24.137,
+      "SMIE2": 0.0,
+      "SMIE3": 0.0,
+      "pct_dSMI_12": -100.0,
+      "pct_dSMI_13": -100.0,
+      "alert_E2": "RED",
+      "high_loss_E3": 1
+    },
+    {
+      "ID": "Expobar 30",
+      "Group": "GI",
+      "SMIE1": 0.0,
+      "SMIE2": 0.0,
+      "SMIE3": 0.0,
+      "pct_dSMI_12": NaN,
+      "pct_dSMI_13": NaN,
+      "alert_E2": "NA",
+      "high_loss_E3": 0
+    },
+    {
+      "ID": "Expobar 31",
+      "Group": "GC",
+      "SMIE1": 0.0,
+      "SMIE2": 0.0,
+      "SMIE3": 0.0,
+      "pct_dSMI_12": NaN,
+      "pct_dSMI_13": NaN,
+      "alert_E2": "NA",
+      "high_loss_E3": 0
+    }
+  ]
+}
