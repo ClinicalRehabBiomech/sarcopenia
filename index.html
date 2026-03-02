@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sarcopenia Monitoring – SMI Alerts</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; }
+    .card { border: 1px solid #ddd; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border-bottom: 1px solid #eee; padding: 8px; text-align: left; font-size: 14px; }
+    th { background: #fafafa; position: sticky; top: 0; }
+    .pill { display:inline-block; padding: 2px 8px; border-radius: 999px; font-weight: 600; font-size: 12px; }
+    .OK { background:#e8f5e9; }
+    .YELLOW { background:#fff8e1; }
+    .RED { background:#ffebee; }
+    .NA { background:#f3f3f3; }
+    .grid { display:grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 900px){ .grid { grid-template-columns: 1fr 1fr; } }
+    input, select { padding: 8px; border-radius: 10px; border: 1px solid #ccc; }
+    .controls { display:flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    canvas { width: 100%; max-width: 900px; height: 380px; border: 1px solid #eee; border-radius: 12px; }
+    .small { color:#666; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h1>Sarcopenia Monitoring (Pilot) – SMI-based Alerts</h1>
+  <p class="small" id="meta"></p>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Summary by Group</h2>
+      <div id="summary"></div>
+    </div>
+
+    <div class="card">
+      <h2>Filters</h2>
+      <div class="controls">
+        <label>Group:
+          <select id="groupFilter">
+            <option value="ALL">ALL</option>
+          </select>
+        </label>
+        <label>Alert:
+          <select id="alertFilter">
+            <option value="ALL">ALL</option>
+            <option value="OK">OK</option>
+            <option value="YELLOW">YELLOW</option>
+            <option value="RED">RED</option>
+            <option value="NA">NA</option>
+          </select>
+        </label>
+        <label>Search ID:
+          <input id="search" placeholder="e.g. 12" />
+        </label>
+      </div>
+      <p class="small">Tip: Alert is based on % change in SMI from E1→E2.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Trajectories (SMI E1–E3)</h2>
+    <p class="small">Simple plot: each line = one patient.</p>
+    <canvas id="plot" width="900" height="380"></canvas>
+  </div>
+
+  <div class="card">
+    <h2>Patient Table</h2>
+    <div style="max-height: 420px; overflow:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Group</th>
+            <th>SMI E1</th>
+            <th>SMI E2</th>
+            <th>SMI E3</th>
+            <th>%ΔSMI 12</th>
+            <th>%ΔSMI 13</th>
+            <th>Alert E2</th>
+            <th>High loss E3</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </div>
+
+<script>
+async function loadData() {
+  const res = await fetch('./data.json');
+  if (!res.ok) throw new Error('Cannot load data.json. Make sure it is in the same folder as index.html');
+  return await res.json();
+}
+
+function pill(txt){
+  return `<span class="pill ${txt}">${txt}</span>`;
+}
+
+function renderSummary(summary){
+  let html = `<table>
+    <thead><tr>
+      <th>Group</th><th>n</th>
+      <th>mean %ΔSMI_12</th><th>mean %ΔSMI_13</th>
+      <th>YELLOW+ (count)</th><th>RED (count)</th><th>High loss E3 (count)</th>
+    </tr></thead><tbody>`;
+  for (const s of summary){
+    html += `<tr>
+      <td>${s.Group}</td>
+      <td>${s.n}</td>
+      <td>${Number(s.mean_pct_dSMI_12).toFixed(2)}</td>
+      <td>${Number(s.mean_pct_dSMI_13).toFixed(2)}</td>
+      <td>${s.yellow_or_worse} (${(100*s.yellow_or_worse_rate).toFixed(0)}%)</td>
+      <td>${s.red} (${(100*s.red_rate).toFixed(0)}%)</td>
+      <td>${s.high_loss_E3} (${(100*s.high_loss_E3_rate).toFixed(0)}%)</td>
+    </tr>`;
+  }
+  html += `</tbody></table>`;
+  return html;
+}
+
+function filterRows(allRows, group, alert, search){
+  return allRows.filter(r => {
+    if (group !== 'ALL' && String(r.Group) !== group) return false;
+    if (alert !== 'ALL' && String(r.alert_E2) !== alert) return false;
+    if (search && !String(r.ID).includes(search)) return false;
+    return true;
+  });
+}
+
+function renderRows(rows){
+  const tbody = document.getElementById('rows');
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td>${r.ID}</td>
+      <td>${r.Group}</td>
+      <td>${Number(r.SMIE1).toFixed(3)}</td>
+      <td>${Number(r.SMIE2).toFixed(3)}</td>
+      <td>${Number(r.SMIE3).toFixed(3)}</td>
+      <td>${Number(r.pct_dSMI_12).toFixed(2)}%</td>
+      <td>${Number(r.pct_dSMI_13).toFixed(2)}%</td>
+      <td>${pill(r.alert_E2)}</td>
+      <td>${r.high_loss_E3 ? 'Yes' : 'No'}</td>
+    </tr>
+  `).join('');
+}
+
+function drawTrajectories(canvas, rows){
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  // Background
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0,0,W,H);
+
+  // Get data bounds
+  const vals = rows.flatMap(r => [r.SMIE1, r.SMIE2, r.SMIE3]).map(Number).filter(v => Number.isFinite(v));
+  if (!vals.length) return;
+  const minY = Math.min(...vals);
+  const maxY = Math.max(...vals);
+
+  // Plot area
+  const pad = {l:50, r:20, t:20, b:40};
+  const x = (i) => pad.l + i * ((W - pad.l - pad.r) / 2); // i = 0,1,2
+  const y = (v) => pad.t + (maxY - v) * ((H - pad.t - pad.b) / (maxY - minY || 1));
+
+  // Axes
+  ctx.strokeStyle = '#ddd';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad.l, pad.t);
+  ctx.lineTo(pad.l, H - pad.b);
+  ctx.lineTo(W - pad.r, H - pad.b);
+  ctx.stroke();
+
+  // Labels
+  ctx.fillStyle = '#444';
+  ctx.font = '12px system-ui';
+  ctx.fillText('SMI', 10, 18);
+  ctx.fillText('E1', x(0)-8, H-15);
+  ctx.fillText('E2', x(1)-8, H-15);
+  ctx.fillText('E3', x(2)-8, H-15);
+
+  // Draw each patient as a thin line
+  ctx.globalAlpha = 0.55;
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = '#111';
+  for (const r of rows){
+    const v1 = Number(r.SMIE1), v2 = Number(r.SMIE2), v3 = Number(r.SMIE3);
+    if (![v1,v2,v3].every(Number.isFinite)) continue;
+    ctx.beginPath();
+    ctx.moveTo(x(0), y(v1));
+    ctx.lineTo(x(1), y(v2));
+    ctx.lineTo(x(2), y(v3));
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1.0;
+
+  // min/max ticks
+  ctx.fillStyle = '#666';
+  ctx.fillText(maxY.toFixed(2), 8, y(maxY)+4);
+  ctx.fillText(minY.toFixed(2), 8, y(minY)+4);
+}
+
+(async function init(){
+  const data = await loadData();
+
+  document.getElementById('meta').textContent =
+    `Thresholds: YELLOW ≤ ${data.meta.yellow_threshold_pct}% | RED ≤ ${data.meta.red_threshold_pct}% (E1→E2 % change in SMI).`;
+
+  document.getElementById('summary').innerHTML = renderSummary(data.summary_by_group);
+
+  // Fill group filter
+  const groups = Array.from(new Set(data.rows.map(r => String(r.Group)))).sort();
+  const sel = document.getElementById('groupFilter');
+  for (const g of groups){
+    const opt = document.createElement('option');
+    opt.value = g;
+    opt.textContent = g;
+    sel.appendChild(opt);
+  }
+
+  const canvas = document.getElementById('plot');
+
+  function rerender(){
+    const group = document.getElementById('groupFilter').value;
+    const alert = document.getElementById('alertFilter').value;
+    const search = document.getElementById('search').value.trim();
+
+    const rows = filterRows(data.rows, group, alert, search);
+    renderRows(rows);
+    drawTrajectories(canvas, rows.length ? rows : data.rows);
+  }
+
+  document.getElementById('groupFilter').addEventListener('change', rerender);
+  document.getElementById('alertFilter').addEventListener('change', rerender);
+  document.getElementById('search').addEventListener('input', rerender);
+
+  // initial
+  rerender();
+})();
+</script>
+</body>
+</html>
