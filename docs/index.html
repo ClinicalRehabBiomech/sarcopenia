@@ -180,15 +180,18 @@ canvas{
   </div>
 
   <div class="card">
-    <h2>Muscle Mass Change Over Time</h2>
+    <h2>Muscle Index Trend (Group Mean)</h2>
     <p style="font-size:13px;color:#666;">
-      Each line represents one patient (E1, E2, E3 measurements).
+      Clean view: average muscle index by group across time points (band shows IQR).
     </p>
     <canvas id="plot" width="900" height="380"></canvas>
   </div>
 
   <div class="card">
     <h2>Individual Patient Data</h2>
+    <p style="margin-top:-6px;font-size:13px;color:#666;">
+      Muscle Index = Skeletal Muscle Index (kg/m²). Negative % means muscle loss.
+    </p>
     <div style="overflow:auto; max-height:450px;">
       <table>
         <thead>
@@ -267,42 +270,93 @@ function renderRows(rows){
   `).join('');
 }
 
+/* --------- Professional plot: group means + IQR band --------- */
+function mean(arr){
+  const xs = arr.filter(v => Number.isFinite(v));
+  if(!xs.length) return null;
+  return xs.reduce((a,b)=>a+b,0)/xs.length;
+}
+function quantile(arr, p){
+  const xs = arr.filter(v => Number.isFinite(v)).sort((a,b)=>a-b);
+  if(xs.length === 0) return null;
+  const i = (xs.length - 1) * p;
+  const lo = Math.floor(i), hi = Math.ceil(i);
+  if(lo === hi) return xs[lo];
+  return xs[lo] + (xs[hi] - xs[lo]) * (i - lo);
+}
+
 function drawPlot(canvas, rows){
   const ctx = canvas.getContext("2d");
-  const W = canvas.width;
-  const H = canvas.height;
+  const W = canvas.width, H = canvas.height;
 
-  ctx.clearRect(0, 0, W, H);
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0,0,W,H);
 
-  const vals = (rows || [])
-    .flatMap(r => [r.SMIE1, r.SMIE2, r.SMIE3])
-    .map(Number)
-    .filter(v => !isNaN(v));
+  const groups = ["GI","GC"];
+  const series = {};
 
-  if(!vals.length) return;
+  for(const g of groups){
+    const rs = (rows || []).filter(r => String(r.Group) === g);
+    const e1 = rs.map(r => Number(r.SMIE1));
+    const e2 = rs.map(r => Number(r.SMIE2));
+    const e3 = rs.map(r => Number(r.SMIE3));
+    series[g] = {
+      n: rs.length,
+      mean: [mean(e1), mean(e2), mean(e3)],
+      q25:  [quantile(e1,0.25), quantile(e2,0.25), quantile(e3,0.25)],
+      q75:  [quantile(e1,0.75), quantile(e2,0.75), quantile(e3,0.75)]
+    };
+  }
 
-  const min = Math.min(...vals);
-  const max = Math.max(...vals);
+  const allVals = [];
+  for(const g of groups){
+    for(const v of [...series[g].q25, ...series[g].q75, ...series[g].mean]){
+      if(Number.isFinite(v)) allVals.push(v);
+    }
+  }
+  if(!allVals.length) return;
 
-  const pad = 70;
+  let minY = Math.min(...allVals);
+  let maxY = Math.max(...allVals);
+  const padY = (maxY - minY) * 0.08 || 1;
+  minY -= padY; maxY += padY;
 
-  const x = i => pad + i * ((W - 2*pad) / 2);
-  const y = v => pad + (max - v) * ((H - 2*pad) / (max - min || 1));
+  const pad = {l:72, r:18, t:18, b:54};
+  const x = i => pad.l + i * ((W - pad.l - pad.r) / 2); // 0,1,2
+  const y = v => pad.t + (maxY - v) * ((H - pad.t - pad.b) / (maxY - minY || 1));
+
+  // Grid + y ticks
+  ctx.strokeStyle = "#eee";
+  ctx.lineWidth = 1;
+  const ticks = 4;
+  ctx.font = "12px Arial";
+  for(let i=0;i<=ticks;i++){
+    const tv = minY + (i/ticks)*(maxY-minY);
+    const yy = y(tv);
+    ctx.beginPath();
+    ctx.moveTo(pad.l, yy);
+    ctx.lineTo(W-pad.r, yy);
+    ctx.stroke();
+
+    ctx.fillStyle = "#666";
+    ctx.textAlign = "right";
+    ctx.fillText(tv.toFixed(1), pad.l-10, yy+4);
+  }
 
   // Axes
   ctx.strokeStyle = "#999";
   ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.moveTo(pad, pad);
-  ctx.lineTo(pad, H - pad);
-  ctx.lineTo(W - pad, H - pad);
+  ctx.moveTo(pad.l, pad.t);
+  ctx.lineTo(pad.l, H-pad.b);
+  ctx.lineTo(W-pad.r, H-pad.b);
   ctx.stroke();
 
   // Labels
   ctx.fillStyle = "#333";
-  ctx.font = "14px Arial";
+  ctx.font = "13px Arial";
 
-  // Y label
   ctx.save();
   ctx.translate(22, H/2);
   ctx.rotate(-Math.PI/2);
@@ -310,38 +364,76 @@ function drawPlot(canvas, rows){
   ctx.fillText("Skeletal Muscle Index (kg/m²)", 0, 0);
   ctx.restore();
 
-  // X label
   ctx.textAlign = "center";
-  ctx.fillText("Time Point", W/2, H - 18);
+  ctx.fillText("Baseline (E1)", x(0), H-pad.b+28);
+  ctx.fillText("Follow-up (E2)", x(1), H-pad.b+28);
+  ctx.fillText("Follow-up (E3)", x(2), H-pad.b+28);
 
-  // X tick labels
-  ctx.fillText("Baseline (E1)", x(0), H - pad + 28);
-  ctx.fillText("Follow-up (E2)", x(1), H - pad + 28);
-  ctx.fillText("Follow-up (E3)", x(2), H - pad + 28);
+  // Title (inside plot)
+  ctx.textAlign = "left";
+  ctx.fillText("Group trends (mean) with IQR band", pad.l, pad.t+12);
 
-  // Y tick labels
-  ctx.textAlign = "right";
-  ctx.fillText(max.toFixed(2), pad - 10, y(max) + 4);
-  ctx.fillText(min.toFixed(2), pad - 10, y(min) + 4);
+  function drawBand(g, strokeColor, fillRGBA){
+    const m = series[g].mean;
+    const lo = series[g].q25;
+    const hi = series[g].q75;
 
-  // Lines
-  ctx.globalAlpha = 0.55;
-  ctx.lineWidth = 1.2;
-  ctx.strokeStyle = "#0b3c5d";
-
-  (rows || []).forEach(r => {
-    const v1 = Number(r.SMIE1), v2 = Number(r.SMIE2), v3 = Number(r.SMIE3);
-    if(isNaN(v1) || isNaN(v2) || isNaN(v3)) return;
-
+    // IQR band
+    ctx.fillStyle = fillRGBA;
     ctx.beginPath();
-    ctx.moveTo(x(0), y(v1));
-    ctx.lineTo(x(1), y(v2));
-    ctx.lineTo(x(2), y(v3));
-    ctx.stroke();
-  });
+    ctx.moveTo(x(0), y(lo[0] ?? m[0]));
+    ctx.lineTo(x(1), y(lo[1] ?? m[1]));
+    ctx.lineTo(x(2), y(lo[2] ?? m[2]));
+    ctx.lineTo(x(2), y(hi[2] ?? m[2]));
+    ctx.lineTo(x(1), y(hi[1] ?? m[1]));
+    ctx.lineTo(x(0), y(hi[0] ?? m[0]));
+    ctx.closePath();
+    ctx.fill();
 
-  ctx.globalAlpha = 1;
+    // Mean line
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(x(0), y(m[0]));
+    ctx.lineTo(x(1), y(m[1]));
+    ctx.lineTo(x(2), y(m[2]));
+    ctx.stroke();
+
+    // Markers
+    ctx.fillStyle = strokeColor;
+    for(let i=0;i<3;i++){
+      if(!Number.isFinite(m[i])) continue;
+      ctx.beginPath();
+      ctx.arc(x(i), y(m[i]), 4, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  // GI = accent, GC = primary
+  drawBand("GI", "#328cc1", "rgba(50,140,193,0.18)");
+  drawBand("GC", "#0b3c5d", "rgba(11,60,93,0.18)");
+
+  // Legend
+  const lx = W - pad.r - 210;
+  const ly = pad.t + 10;
+  ctx.font = "12px Arial";
+  ctx.textAlign = "left";
+  ctx.fillStyle = "#333";
+
+  ctx.fillStyle = "#328cc1";
+  ctx.fillRect(lx, ly+2, 12, 12);
+  ctx.fillStyle = "#333";
+  ctx.fillText(`GI (n=${series["GI"].n})`, lx+18, ly+12);
+
+  ctx.fillStyle = "#0b3c5d";
+  ctx.fillRect(lx, ly+22, 12, 12);
+  ctx.fillStyle = "#333";
+  ctx.fillText(`GC (n=${series["GC"].n})`, lx+18, ly+32);
+
+  ctx.fillStyle = "#666";
+  ctx.fillText("Band = IQR (25–75%)", pad.l, H-18);
 }
+/* ----------------------------------------------------------- */
 
 (async function(){
   try{
@@ -349,7 +441,6 @@ function drawPlot(canvas, rows){
 
     document.getElementById("summary").innerHTML = renderSummary(data.summary_by_group);
 
-    // fill group options (keep "All Groups" first)
     const groups = [...new Set((data.rows || []).map(r => r.Group))].sort();
     const sel = document.getElementById("groupFilter");
     groups.forEach(g=>{
@@ -372,6 +463,7 @@ function drawPlot(canvas, rows){
       });
 
       renderRows(rows);
+      // Plot uses the current filtered set (if empty, fallback to all)
       drawPlot(document.getElementById("plot"), rows.length ? rows : (data.rows || []));
     }
 
